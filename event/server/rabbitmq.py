@@ -10,13 +10,9 @@ import aioamqp
 import aioamqp.properties
 import aioamqp.protocol
 
-from .base import BaseConsumer, BaseServer
+from .base import BaseConsumer, BaseServer, meth_comspec_name
 
 logger = logging.getLogger(__name__)
-
-
-def meth_comspec_name(meth):
-    return '{0}.{1}'.format(meth.__module__, meth.__qualname__)
 
 
 class Consumer(BaseConsumer):
@@ -87,6 +83,7 @@ class Server(BaseServer):
                                              self.exchange_type,
                                              durable=True)
         self.__start_consumers()
+        print('Message processing server is running...')
 
     async def __on_error(self, exc):
         self.status = 'CLOSED'
@@ -149,6 +146,8 @@ class Server(BaseServer):
         self.consumers.add(consumer)
         if self.status == 'RUNNING':
             self.loop.create_task(consumer.start())
+
+        print('Register handler[{}] -> queue[{}]'.format(meth_comspec_name(handler), queue))
 
     def handler(self,
                 routing_key,

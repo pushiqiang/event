@@ -108,4 +108,7 @@ server.publish_soon(routing_key='example-test-rabbitmq',
 
 ```
 
-### TODOLIST
+### TODO-LIST
+- [ ] 消息异常处理
+- [ ] 消息处理确认
+- [ ] 消息处理重试

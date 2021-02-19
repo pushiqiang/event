@@ -8,7 +8,7 @@ import logging
 
 import aioredis
 
-from .base import BaseConsumer, BaseServer
+from .base import BaseConsumer, BaseServer, meth_comspec_name
 
 logger = logging.getLogger(__name__)
 
@@ -127,6 +127,7 @@ class Server(BaseServer):
         self.consumers.add(consumer)
         if self.status == 'RUNNING':
             self.loop.create_task(consumer.start())
+        print('Register handler[{}] -> channels[{}]'.format(meth_comspec_name(handler), ','.join(channels)))
 
     async def __keep_alive(self):
         if not self._is_keep_alive:
@@ -149,6 +150,7 @@ class Server(BaseServer):
         self._producer = await self.create_redis_connection()
         self.status = 'CONNECTED'
         self.__start_consumers()
+        print('Message processing server is running...')
 
     def __start_consumers(self):
         for c in self.consumers:

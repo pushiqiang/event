@@ -1,6 +1,10 @@
 import abc
 
 
+def meth_comspec_name(meth):
+    return '{0}.{1}'.format(meth.__module__, meth.__qualname__)
+
+
 class BaseConsumer(metaclass=abc.ABCMeta):
     @abc.abstractmethod
     async def handle_message(self, message):

@@ -8,7 +8,7 @@ import logging
 
 import aiokafka
 
-from .base import BaseConsumer, BaseServer
+from .base import BaseConsumer, BaseServer, meth_comspec_name
 
 logger = logging.getLogger(__name__)
 
@@ -126,6 +126,7 @@ class Server(BaseServer):
         self.consumers.add(consumer)
         if self.status == 'RUNNING':
             self.loop.create_task(consumer.start())
+        print('Register handler[{}] -> topics[{}]'.format(meth_comspec_name(handler), ','.join(topics)))
 
     def __start_consumers(self):
         for c in self.consumers:
@@ -139,6 +140,7 @@ class Server(BaseServer):
         self._producer = await self.create_kafka_producer()
         self.status = 'CONNECTED'
         self.__start_consumers()
+        print('Message processing server is running...')
 
     def handler(self,
                 topics,
