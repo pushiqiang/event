@@ -35,6 +35,10 @@ class BaseServer(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
+    def publish_wait(self, *args, **kwargs):
+        pass
+
+    @abc.abstractmethod
     async def subscribe(self, *args, **kwargs):
         pass
 

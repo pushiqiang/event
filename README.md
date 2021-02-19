@@ -1,6 +1,6 @@
-## Settings
+## Message processing framework (redis/kafka/rabbitmq ) 
 
-python:7
+Requirement: python:7
 
 ### PEP8 Check
 ```
@@ -34,7 +34,19 @@ def handle_example_message(message):
 app.run_forever()
 
 # send message
+await server.publish(channel='example-test-redis',
+                     message={
+                         'test_id': 'redis',
+                         'message': 'good test'
+                     })
+或者
 server.publish_soon(channel='example-test-redis',
+                    message={
+                        'test_id': 'redis',
+                        'message': 'good test'
+                    })
+或者
+server.publish_wait(channel='example-test-redis',
                     message={
                         'test_id': 'redis',
                         'message': 'good test'
@@ -65,6 +77,12 @@ def handle_example_message(message):
 app.run_forever()
 
 # send message
+await server.publish(topic='example-test-kafka',
+                     message={
+                         'test_id': 'kafka',
+                         'message': 'good test'
+                     })
+或者
 server.publish_soon(topic='example-test-kafka',
                     message={
                         'test_id': 'kafka',
@@ -100,6 +118,12 @@ def handle_example_message(message):
 app.run_forever()
 
 # send message
+await server.publish(routing_key='example-test-rabbitmq',
+                     message={
+                         'test_id': 'rabbitmq',
+                         'message': 'good test'
+                     })
+或者
 server.publish_soon(routing_key='example-test-rabbitmq',
                     message={
                         'test_id': 'rabbitmq',

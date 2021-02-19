@@ -119,6 +119,9 @@ class Server(BaseServer):
         asyncio.run_coroutine_threadsafe(
             self.publish(routing_key, message, serializer), self.loop)
 
+    def publish_wait(self, routing_key, message, serializer=json.dumps):
+        self.loop.run_until_complete(self.publish(routing_key, message, serializer))
+
     async def __subscribe_channel(self, routing_key, queue):
         _channel = await self._connection.channel()
         await _channel.queue_declare(queue, durable=True)

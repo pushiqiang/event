@@ -102,11 +102,11 @@ class Server(BaseServer):
         await self._producer.send_and_wait(topic, message)
 
     def publish_soon(self, topic, message, serializer=json.dumps):
-        """
-        发送消息
-        """
         asyncio.run_coroutine_threadsafe(
             self.publish(topic, message, serializer), self.loop)
+
+    def publish_wait(self, topic, message, serializer=json.dumps):
+        self.loop.run_until_complete(self.publish(topic, message, serializer))
 
     async def subscribe(self,
                         topics,

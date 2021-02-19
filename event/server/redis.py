@@ -77,11 +77,11 @@ class Server(BaseServer):
         await self._producer.publish(channel, message)
 
     def publish_soon(self, channel, message, serializer=json.dumps):
-        """
-        发送消息
-        """
         asyncio.run_coroutine_threadsafe(
             self.publish(channel, message, serializer), self.loop)
+
+    def publish_wait(self, channel, message, serializer=json.dumps):
+        self.loop.run_until_complete(self.publish(channel, message, serializer))
 
     async def __subscribe_channels(self, sub, channels):
         _pattern_channel = []
