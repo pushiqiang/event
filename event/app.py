@@ -30,7 +30,20 @@ def django_auto_load_handlers():
                 __import__('{pkg}.{mdl}'.format(pkg=app, mdl=item[:-3]))
 
 
-class App:
+class SingleMeta(type):
+    __instance = None
+    __lock = threading.Lock()
+
+    def __call__(cls, *args, **kwargs):
+        if not SingleMeta.__instance:
+            with SingleMeta.__lock:
+                if not SingleMeta.__instance:
+                    SingleMeta.__instance = object.__new__(cls)
+                    cls.__init__(SingleMeta.__instance, *args, **kwargs)
+        return SingleMeta.__instance
+
+
+class App(metaclass=SingleMeta):
     def __init__(self, base_dir, auto_load_handler=True, loop=None):
         self._server_repo = {}
         self.base_dir = base_dir

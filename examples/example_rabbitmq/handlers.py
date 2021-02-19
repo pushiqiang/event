@@ -3,8 +3,7 @@ from event_server import app
 server = app.get_server('default')
 
 
-@server.handler(routing_key='example-test-sync',
-                queue='example-test-sync-queue')
+@server.handler(routing_key='example-test-sync')
 def handle_example_sync(message):
     print('Received message: ', message)
 

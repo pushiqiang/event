@@ -144,7 +144,7 @@ class Server(BaseServer):
                 topics,
                 group_id=None,
                 key_deserializer=None,
-                value_deserializer=None,
+                value_deserializer=lambda x: json.loads(x.decode()),
                 enable_auto_commit=True,
                 timeout=10,
                 **kwargs):

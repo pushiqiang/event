@@ -15,7 +15,7 @@ from .base import BaseConsumer, BaseServer
 logger = logging.getLogger(__name__)
 
 
-def meth_str(meth):
+def meth_comspec_name(meth):
     return '{0}.{1}'.format(meth.__module__, meth.__qualname__)
 
 
@@ -152,14 +152,14 @@ class Server(BaseServer):
 
     def handler(self,
                 routing_key,
-                queue,
+                queue=None,
                 deserializer=json.loads,
                 timeout=10,
                 **kwargs):
         """
         添加事件处理器的装饰器
         :param routing_key: 路由键
-        :param queue: 队列
+        :param queue: 队列，若为None，则为消息处理函数的全路径名
         :param deserializer: 消息解析器 json.loads
         :param timeout: 处理的超时时长，默认值10秒，优先级 默认值 < 装饰器设置
         :return:
@@ -167,7 +167,7 @@ class Server(BaseServer):
         def decorator(func):
             asyncio.run_coroutine_threadsafe(self.subscribe(
                 routing_key=routing_key,
-                queue=queue,
+                queue=queue or meth_comspec_name(func),
                 handler=func,
                 deserializer=deserializer,
                 timeout=timeout,

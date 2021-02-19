@@ -139,7 +139,6 @@ class Server(BaseServer):
             await asyncio.sleep(self.heartbeat_interval)
             # 向redis-server发送PING消息
             for i in range(len(self._subs)):
-                await asyncio.sleep(1)
                 if not (await self._subs[i].ping()):
                     self._subs[i] = await self.create_redis_connection()
 
