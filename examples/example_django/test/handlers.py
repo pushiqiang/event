@@ -1,8 +1,8 @@
-from example.event_server import app
+from example.event_manager import manager
 
-redis_server = app.get_server('redis')
-kafka_server = app.get_server('kafka')
-rabbitmq_server = app.get_server('rabbitmq')
+redis_server = manager.get_server('redis')
+kafka_server = manager.get_server('kafka')
+rabbitmq_server = manager.get_server('rabbitmq')
 
 
 @redis_server.handler(channels=['example:test:django'])

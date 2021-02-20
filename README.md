@@ -1,4 +1,4 @@
-## Message processing framework (redis/kafka/rabbitmq ) 
+## Message processing framework (redis/kafka/rabbitmq) 
 
 Requirement: python:7
 
@@ -16,22 +16,22 @@ isort -rc . --check-only --diff
 # Run server
 import os
 
-from event import App
+from event import Manager
 from event.server.redis import Server
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-app = App(base_dir=BASE_DIR)
+manager = Manager(base_dir=BASE_DIR)
 config = {
     'url': 'redis://redis/3',
 }
 server = Server(**config)
-app.register_server('default', server)
+manager.register_server('default', server)
 
 @server.handler(channels=['example:test:redis'])
 def handle_example_message(message):
     print('Received message: ', message)
 
-app.run_forever()
+manager.run_forever()
 
 # send message
 await server.publish(channel='example-test-redis',
@@ -39,13 +39,13 @@ await server.publish(channel='example-test-redis',
                          'test_id': 'redis',
                          'message': 'good test'
                      })
-或者
+# OR
 server.publish_soon(channel='example-test-redis',
                     message={
                         'test_id': 'redis',
                         'message': 'good test'
                     })
-或者
+# OR
 server.publish_wait(channel='example-test-redis',
                     message={
                         'test_id': 'redis',
@@ -59,22 +59,22 @@ server.publish_wait(channel='example-test-redis',
 # Run server
 import os
 
-from event import App
+from event import Manager
 from event.server.kafka import Server
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-app = App(base_dir=BASE_DIR)
+manager = Manager(base_dir=BASE_DIR)
 config = {
     'url': 'kafka:9092',
 }
 server = Server(**config)
-app.register_server('default', server)
+manager.register_server('default', server)
 
 @server.handler(topics=['example-test-kafka'])
 def handle_example_message(message):
     print('Received message: ', message, message.value)
 
-app.run_forever()
+manager.run_forever()
 
 # send message
 await server.publish(topic='example-test-kafka',
@@ -82,7 +82,7 @@ await server.publish(topic='example-test-kafka',
                          'test_id': 'kafka',
                          'message': 'good test'
                      })
-或者
+# OR
 server.publish_soon(topic='example-test-kafka',
                     message={
                         'test_id': 'kafka',
@@ -97,25 +97,25 @@ server.publish_soon(topic='example-test-kafka',
 # Run server
 import os
 
-from event import App
+from event import Manager
 from event.server.rabbitmq import Server
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-app = App(base_dir=BASE_DIR)
+manager = Manager(base_dir=BASE_DIR)
 config = {
     'url': 'amqp://rabbitmq:5672',
     'exchange': 'test',
     'exchange_type': 'topic',
 }
 server = Server(**config)
-app.register_server('default', server)
+manager.register_server('default', server)
 
 @server.handler(routing_key='example-test-rabbitmq',
                 queue='example-test-rabbitmq-queue')
 def handle_example_message(message):
     print('Received message: ', message)
 
-app.run_forever()
+manager.run_forever()
 
 # send message
 await server.publish(routing_key='example-test-rabbitmq',
@@ -123,7 +123,7 @@ await server.publish(routing_key='example-test-rabbitmq',
                          'test_id': 'rabbitmq',
                          'message': 'good test'
                      })
-或者
+# OR
 server.publish_soon(routing_key='example-test-rabbitmq',
                     message={
                         'test_id': 'rabbitmq',

@@ -2,14 +2,14 @@
 from django.shortcuts import HttpResponse
 from django.views import View
 
-from example.event_server import app
+from example.event_manager import manager
 
 
 class TestView(View):
     def get(self, request, *args, **kwargs):
-        redis_server = app.get_server('redis')
-        kafka_server = app.get_server('kafka')
-        rabbitmq_server = app.get_server('rabbitmq')
+        redis_server = manager.get_server('redis')
+        kafka_server = manager.get_server('kafka')
+        rabbitmq_server = manager.get_server('rabbitmq')
         redis_server.publish_soon(channel='example:test:django',
                                   message={
                                       'test_id': 'redis_id',
@@ -31,7 +31,7 @@ class TestView(View):
 
 class TestRedisView(View):
     def get(self, request, *args, **kwargs):
-        server = app.get_server('redis')
+        server = manager.get_server('redis')
         server.publish_soon(channel='example:test:django',
                             message={
                                 'test_id': 'redis_id',
@@ -43,7 +43,7 @@ class TestRedisView(View):
 
 class TestKafkaView(View):
     def get(self, request, *args, **kwargs):
-        server = app.get_server('kafka')
+        server = manager.get_server('kafka')
         server.publish_soon(topic='example-test-django',
                             message={
                                 'test_id': 'kafka_id',
@@ -55,7 +55,7 @@ class TestKafkaView(View):
 
 class TestRabbitmqView(View):
     def get(self, request, *args, **kwargs):
-        server = app.get_server('rabbitmq')
+        server = manager.get_server('rabbitmq')
         server.publish_soon(routing_key='example:test:django',
                             message={
                                 'test_id': 'rabbitmq_id',

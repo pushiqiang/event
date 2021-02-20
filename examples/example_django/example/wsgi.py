@@ -12,10 +12,10 @@ import os
 from django.core.wsgi import get_wsgi_application
 
 # 启动时创建mq消息服务
-from .event_server import app
+from .event_manager import manager
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "example.settings")
 
 application = get_wsgi_application()
 
-app.run_in_django()
+manager.run_in_django()

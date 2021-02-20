@@ -1,6 +1,6 @@
-from event_server import app
+from event_manager import manager
 
-server = app.get_server('default')
+server = manager.get_server('default')
 
 
 @server.handler(channels=['example:test:sync'])

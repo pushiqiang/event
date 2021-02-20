@@ -1,36 +1,12 @@
 import asyncio
-import importlib
-import os
 import threading
-
-
-def auto_load_handlers(path):
-    """
-    自动加载handlers.py脚本
-    """
-    for item in os.listdir(path):
-        item_path = os.path.join(path, item)
-        if item.endswith('handlers.py'):
-            importlib.import_module(item[:-3], item_path)
-        elif os.path.isdir(item_path):
-            auto_load_handlers(item_path)
-
-
-def django_auto_load_handlers():
-    """
-    django启动时自动加载handlers.py脚本，主要用于需要启动时加载的功能，例如: 事件处理函数
-    """
-    from django.conf import settings
-    for app in settings.INSTALLED_APPS:
-        app_path = app.replace('.', '/')
-        if not os.path.isdir(app_path):
-            continue
-        for item in os.listdir(app_path):
-            if item.endswith('handlers.py'):
-                __import__('{pkg}.{mdl}'.format(pkg=app, mdl=item[:-3]))
+from .utils import auto_load_handlers, django_auto_load_handlers
 
 
 class SingleMeta(type):
+    """
+    Thread-safe singleton metaclass
+    """
     __instance = None
     __lock = threading.Lock()
 
@@ -43,7 +19,7 @@ class SingleMeta(type):
         return SingleMeta.__instance
 
 
-class App(metaclass=SingleMeta):
+class Manager(metaclass=SingleMeta):
     def __init__(self, base_dir, auto_load_handler=True, loop=None):
         self._server_repo = {}
         self.base_dir = base_dir
@@ -77,7 +53,7 @@ class App(metaclass=SingleMeta):
             asyncio.run_coroutine_threadsafe(server.start(), self.loop)
 
         t = threading.Thread(target=self.loop.run_forever)
-        # t.setDaemon(True)
+        t.setDaemon(True)
         t.start()
 
     def run_in_thread(self):
