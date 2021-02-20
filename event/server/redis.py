@@ -150,7 +150,7 @@ class Server(BaseServer):
         self._producer = await self.create_redis_connection()
         self.status = 'CONNECTED'
         self.__start_consumers()
-        print('Message processing server is running...')
+        print('Message processing server for redis is running...')
 
     def __start_consumers(self):
         for c in self.consumers:

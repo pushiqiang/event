@@ -83,7 +83,7 @@ class Server(BaseServer):
                                              self.exchange_type,
                                              durable=True)
         self.__start_consumers()
-        print('Message processing server is running...')
+        print('Message processing server for rabbitmq is running...')
 
     async def __on_error(self, exc):
         self.status = 'CLOSED'

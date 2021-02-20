@@ -140,7 +140,7 @@ class Server(BaseServer):
         self._producer = await self.create_kafka_producer()
         self.status = 'CONNECTED'
         self.__start_consumers()
-        print('Message processing server is running...')
+        print('Message processing server for kafka is running...')
 
     def handler(self,
                 topics,

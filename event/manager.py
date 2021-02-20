@@ -24,7 +24,8 @@ class Manager(metaclass=SingleMeta):
         self._server_repo = {}
         self.base_dir = base_dir
         self.auto_load_handler = auto_load_handler
-        self.loop = loop or asyncio.get_event_loop()
+        self.loop = loop or asyncio.new_event_loop()
+        asyncio.set_event_loop(self.loop)
 
     def _auto_load_handler(self):
         if self.auto_load_handler:
@@ -48,7 +49,6 @@ class Manager(metaclass=SingleMeta):
         self.loop.run_forever()
 
     def _run_in_thread(self):
-        asyncio.set_event_loop(self.loop)
         for server in self._server_repo.values():
             asyncio.run_coroutine_threadsafe(server.start(), self.loop)
 
