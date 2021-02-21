@@ -11,6 +11,68 @@ isort -rc . --check-only --diff
 
 ### Usages
 
+#### in django
+```python
+# event_manager.py
+import os
+from event import Manager
+from event.server.kafka import Server as KafkaServer
+from event.server.rabbitmq import Server as RabbitmqServer
+from event.server.redis import Server as RedisServer
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+manager = Manager(base_dir=BASE_DIR)
+manager.register_server('redis', RedisServer(url='redis://redis/3'))
+manager.register_server('kafka', KafkaServer(url='kafka:9092'))
+
+# wsgi.py
+import os
+from django.core.wsgi import get_wsgi_application
+from .event_manager import manager
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "example.settings")
+application = get_wsgi_application()
+manager.run_in_django()
+
+# handlers.py
+from example.event_manager import manager
+
+redis_server = manager.get_server('redis')
+kafka_server = manager.get_server('kafka')
+
+@redis_server.handler(channels=['example:test:django'])
+def handle_example_django_redis(message):
+    print('Received redis message', message)
+
+
+@kafka_server.handler(topics=['example-test-django'])
+def handle_example_django_kafka(message):
+    print('Received kafka message: ', message, message.value)
+
+# views.py
+from django.shortcuts import HttpResponse
+from django.views import View
+from example.event_manager import manager
+
+redis_server = manager.get_server('redis')
+kafka_server = manager.get_server('kafka')
+
+class TestView(View):
+    def get(self, request, *args, **kwargs):
+        redis_server.publish_wait(channel='example:test:django',
+                                  message={
+                                      'test_id': 'redis_id',
+                                      'message': 'redis good'
+                                  })
+        kafka_server.publish_wait(topic='example-test-django',
+                                  message={
+                                      'test_id': 'kafka_id',
+                                      'message': 'kafka good'
+                                  })
+        return HttpResponse('good')
+```
+
+
 #### redis
 ```python
 # Run server
