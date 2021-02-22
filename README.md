@@ -11,6 +11,14 @@ isort -rc . --check-only --diff
 
 ### Usages
 
+#### test
+```
+1. cd examples
+2. setup docker container by `sudo docker-compose up -d`
+3. enter container terminal_1 by `sudo docker exec -it your_container_id bash` and run main.py
+4. enter a new container terminal_2 and run send_message.py 
+```
+
 #### in django
 ```python
 # event_manager.py
