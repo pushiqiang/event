@@ -1,6 +1,6 @@
 ## Message processing framework (redis/kafka/rabbitmq) 
 
-Requirement: python:7
+Requirement: python:3.7
 
 ### PEP8 Check
 ```
