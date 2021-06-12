@@ -29,7 +29,31 @@ class Consumer(BaseConsumer):
         self.handler = handler
         self.deserializer = deserializer
         self.timeout = timeout
-        self._channel = None
+
+    def get_ttl(self, retry_count):
+        """
+        :param retry_count: 重试次数
+        :return: 毫秒
+        """
+        if retry_count <= 0:
+            return 0
+        elif 0 < retry_count <= 5:
+            return (1 << retry_count) * 1000
+        else:
+            # max 60 seconds
+            return 60 * 1000
+
+    async def __try_publish_to_retry_queue(self, headers, body):
+        retried_count = (headers or {}).get('x-retry-count', 0)
+        retried_count = retried_count if retried_count >= 0 else 0
+
+        if self.max_retry < 0 or retried_count < self.max_retry:
+            retry_channel = await self.server.connection.channel()
+            properties = {'expiration': str(self.get_ttl(retried_count + 1)),
+                          'headers': {'x-retry-count': retried_count + 1}}
+            await retry_channel.basic_publish(body, self.server.retry_exchange, self.queue, properties=properties)
+            await retry_channel.close()
+        return retried_count
 
     async def handle_message(self, message):
         if self.deserializer:
@@ -48,7 +72,8 @@ class Consumer(BaseConsumer):
         try:
             await self.handle_message(message)
         except Exception as ex:
-            logger.error('Consume({}) message error.'.format(self.handler),
+            retried_count = await self.__try_publish_to_retry_queue(properties.headers, body)
+            logger.error('Consume({}) message error, have retried {} times'.format(self.handler, retried_count),
                          exc_info=ex)
         finally:
             await channel.basic_client_ack(envelope.delivery_tag)
@@ -67,6 +92,12 @@ class Server(BaseServer):
         self.status = 'INIT'  # INIT -> CONNECTED -> RUNNING | CLOSED
         self._connection = None
         self._channel = None
+        self._retry_exchange = '{}_retry_exchange'.format(exchange)
+        self._retry_queue = '{}_retry_queue'.format(exchange)
+
+    @property
+    def connection(self):
+        return self._connection
 
     @property
     def producer(self):
@@ -79,11 +110,18 @@ class Server(BaseServer):
             self._connection = await self.create_rabbitmq_connection()
         self._channel = await self._connection.channel()
         self.status = 'CONNECTED'
-        await self._channel.exchange_declare(self.exchange,
-                                             self.exchange_type,
-                                             durable=True)
+        await self.__declare_exchange()
         self.__start_consumers()
         print('Message processing server for rabbitmq is running...')
+
+    async def __declare_exchange(self):
+        # declare work exchange
+        await self._channel.exchange_declare(self.exchange, self.exchange_type, durable=True)
+        # declare retry exchange
+        await self._channel.exchange_declare(self._retry_exchange, 'topic', durable=True)
+        await self._channel.queue_declare(self._retry_queue, durable=True,
+                                          arguments={"x-dead-letter-exchange": ''})
+        await self._channel.queue_bind(self._retry_queue, self._retry_exchange, '#')
 
     async def __on_error(self, exc):
         self.status = 'CLOSED'

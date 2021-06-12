@@ -1,6 +1,7 @@
 import asyncio
 import threading
-from .utils import auto_load_handlers, django_auto_load_handlers
+from .context import set_global_manager
+from .utils import auto_load_handlers
 
 
 class SingleMeta(type):
@@ -26,6 +27,7 @@ class Manager(metaclass=SingleMeta):
         self.auto_load_handler = auto_load_handler
         self.loop = loop or asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
+        set_global_manager(self)
 
     def _auto_load_handler(self):
         if self.auto_load_handler:
@@ -61,6 +63,7 @@ class Manager(metaclass=SingleMeta):
         self._auto_load_handler()
 
     def run_in_django(self):
+        from event.django.utils import django_auto_load_handlers
         self._run_in_thread()
         if self.auto_load_handler:
             django_auto_load_handlers()
